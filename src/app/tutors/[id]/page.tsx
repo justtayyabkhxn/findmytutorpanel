@@ -34,7 +34,7 @@ export default async function TutorDetails({
 
   // 1️⃣ Fetch tutor details
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/tutors/${id}`,
+    `http://localhost:3000/api/tutors/${id}`,
     { cache: "no-store" }
   );
   if (!res.ok) return <div className="text-red-500">Tutor not found</div>;
@@ -46,7 +46,7 @@ export default async function TutorDetails({
     ? await Promise.all(
         tutor.assignedTuitions.map(async (tuitionId: string) => {
           const tuitionRes = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/assign-tuition/${tuitionId}`,
+            `http://localhost:3000/api/assign-tuition/${tuitionId}`,
             { cache: "no-store" }
           );
           if (!tuitionRes.ok) return null;

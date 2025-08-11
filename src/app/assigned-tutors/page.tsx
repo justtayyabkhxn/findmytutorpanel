@@ -25,7 +25,7 @@ interface Tutor {
 }
 
 export default async function AssignedTutors() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tutors`, {
+  const res = await fetch(`http://localhost:3000/api/tutors`, {
     cache: "no-store",
   });
 
@@ -41,7 +41,7 @@ export default async function AssignedTutors() {
         ? await Promise.all(
             t.assignedTuitions.map(async (tuitionId) => {
               const tuitionRes = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_URL}/api/assign-tuition/${tuitionId}`,
+                `http://localhost:3000/api/assign-tuition/${tuitionId}`,
                 { cache: "no-store" }
               );
               if (!tuitionRes.ok) return null;
