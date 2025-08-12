@@ -1,7 +1,8 @@
 import TutorCard from "@/components/TuitionCard";
 import { Book } from "lucide-react";
+import Link from "next/link";
 
-const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface Tutor {
   _id: string;
@@ -37,21 +38,26 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="relative text-center py-10 px-6 z-10">
         <div className="max-w-6xl mx-auto relative z-10">
-                    <center>
-
-          <img src="/logo.png" width={100} height={100}></img>
+          <center>
+            <img src="/logo.png" width={100} height={100}></img>
           </center>
-          <h1 className="text-3xl lg:text-5xl md:text-5xl font-extrabold text-[#E4D7BD] flex justify-center items-center gap-4 drop-shadow-[0_4px_15px_rgba(154,143,124,0.4)]">
+          <h1 className="text-3xl mt-4 lg:text-5xl md:text-5xl font-extrabold text-[#E4D7BD] flex justify-center items-center gap-4 drop-shadow-[0_4px_15px_rgba(154,143,124,0.4)]">
             Find Your Perfect Tutor
           </h1>
           <p className="mt-6 text-md lg:text-lg md:text-2xl text-orange-300/80 max-w-2xl mx-auto leading-relaxed tracking-tighter font-bold">
-            Discover skilled tutors ready to help you excel in your learning journey.
-            Learn faster, achieve more, and enjoy the process.
+            Discover skilled tutors ready to help you excel in your learning
+            journey. Learn faster, achieve more, and enjoy the process.
           </p>
-          <button className="mt-10 px-10 py-4 bg-[#9A8F7C] font-bold tracking-wider text-white rounded-full shadow-xl shadow-[#9A8F7C]/30 hover:bg-[#E4D7BD] hover:text-[#0F1115] cursor-pointer transition-all flex items-center mx-auto gap-3">
-            <Book className="w-5 h-5" />
-            Our Assigned Tutors
-          </button>
+          <Link href="/assigned-tutors">
+            <button
+              className="mt-10 px-10 py-4 bg-[#9A8F7C] font-bold tracking-wider text-white rounded-full shadow-xl shadow-[#9A8F7C]/30
+               hover:bg-[#E4D7BD] hover:text-[#0F1115] active:bg-[#8B7C68] active:scale-95
+               cursor-pointer transition-all flex items-center mx-auto gap-3"
+            >
+              <Book className="w-5 h-5" />
+              Our Assigned Tutors
+            </button>
+          </Link>
         </div>
       </section>
 
@@ -61,7 +67,9 @@ export default async function Home() {
           All Tutors
         </h2>
         {tutors.length === 0 ? (
-          <p className="text-[#E4D7BD]/60 italic">No tutors available at the moment.</p>
+          <p className="text-[#E4D7BD]/60 italic">
+            No tutors available at the moment.
+          </p>
         ) : (
           <div className="flex flex-col gap-6">
             {tutors.map((t) => (
