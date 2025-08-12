@@ -78,13 +78,16 @@ export default async function AssignedTutors() {
       <div className="absolute inset-0 bg-[#0F1115]/80 z-0"></div>
 
       {/* Hero Section */}
-      <section className="relative text-center py-20 px-6 z-10">
-        <div className="max-w-4xl mx-auto relative z-10">
-          <h1 className="text-5xl font-extrabold flex justify-center items-center gap-3 drop-shadow-[0_4px_15px_rgba(154,143,124,0.4)]">
-            <Users className="text-orange-300 w-12 h-12 drop-shadow-[0_0_10px_rgba(154,143,124,0.5)]" />
+      <section className="relative text-center py-10 px-6 z-10">
+        <div className="max-w-4xl mx-auto relative z-10 items-center">
+          <center>
+
+          <img src="/logo.png" width={100} height={100}></img>
+          </center>
+          <h1 className="text-2xl lg:text-5xl md:text-5xl font-extrabold flex justify-center items-center gap-3 drop-shadow-[0_4px_15px_rgba(154,143,124,0.4)]">
             Tutors with Assigned Tuitions
           </h1>
-          <p className="mt-4 text-lg text-orange-300/80 font-bold max-w-2xl mx-auto leading-relaxed tracking-tighter">
+          <p className="mt-1 text-lg text-orange-300/80 font-bold max-w-2xl mx-auto leading-relaxed tracking-tighter">
             Explore our dedicated tutors who are actively guiding students to success.
           </p>
         </div>
@@ -100,7 +103,7 @@ export default async function AssignedTutors() {
             No tutors have assigned tuitions yet.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {assigned.map((t) => (
               <TutorCard key={t._id} tutor={t} />
             ))}

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Users } from "lucide-react";
 
-
 function NavbarLink({
   href,
   icon: Icon,
@@ -21,7 +20,7 @@ function NavbarLink({
   return (
     <Link
       href={href}
-      className={`relative flex items-center gap-2 transition-colors duration-300 ${
+      className={`relative flex items-center gap-2 transition-all duration-150 active:scale-95 ${
         isActive
           ? "text-[#9A8F7C]" // active color
           : "text-[#E4D7BD] hover:text-[#9A8F7C]"
@@ -51,9 +50,9 @@ export default function RootLayout({
       <body className="w-full min-h-screen bg-[#1B1E24]/100 text-[#E4D7BD]">
         {/* Navbar */}
         <header className="sticky top-0 z-50 bg-[#2B2F37]/70 backdrop-blur-lg border-b border-[#4B4A45] shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-15  py-4 flex items-center justify-between">
             {/* Logo */}
-            <Link
+            {/* <Link
               href="/"
               className="flex items-center gap-3 hover:scale-105 transition-transform duration-300"
               aria-label="Go to homepage"
@@ -65,7 +64,7 @@ export default function RootLayout({
                 width={80}
                 className="rounded-3xl"
               />
-            </Link>
+            </Link> */}
 
             {/* Nav */}
             <nav className="flex items-center gap-8 text-base font-semibold">

@@ -1,5 +1,5 @@
 import TutorCard from "@/components/TuitionCard";
-import { Users, Trophy } from "lucide-react";
+import { Book } from "lucide-react";
 
 const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -32,22 +32,25 @@ export default async function Home() {
       }}
     >
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-[#0F1115]/80 z-0"></div>
+      <div className="absolute inset-0 bg-[#0F1115]/90 z-0"></div>
 
       {/* Hero Section */}
-      <section className="relative text-center py-24 px-6 z-10">
+      <section className="relative text-center py-10 px-6 z-10">
         <div className="max-w-6xl mx-auto relative z-10">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-[#E4D7BD] flex justify-center items-center gap-4 drop-shadow-[0_4px_15px_rgba(154,143,124,0.4)]">
-            <Users className="text-orange-300 w-12 h-12 drop-shadow-[0_0_10px_rgba(154,143,124,0.5)]" />
+                    <center>
+
+          <img src="/logo.png" width={100} height={100}></img>
+          </center>
+          <h1 className="text-3xl lg:text-5xl md:text-5xl font-extrabold text-[#E4D7BD] flex justify-center items-center gap-4 drop-shadow-[0_4px_15px_rgba(154,143,124,0.4)]">
             Find Your Perfect Tutor
           </h1>
-          <p className="mt-6 text-lg md:text-2xl text-orange-300/80 max-w-2xl mx-auto leading-relaxed tracking-tighter font-bold">
+          <p className="mt-6 text-md lg:text-lg md:text-2xl text-orange-300/80 max-w-2xl mx-auto leading-relaxed tracking-tighter font-bold">
             Discover skilled tutors ready to help you excel in your learning journey.
             Learn faster, achieve more, and enjoy the process.
           </p>
           <button className="mt-10 px-10 py-4 bg-[#9A8F7C] font-bold tracking-wider text-white rounded-full shadow-xl shadow-[#9A8F7C]/30 hover:bg-[#E4D7BD] hover:text-[#0F1115] cursor-pointer transition-all flex items-center mx-auto gap-3">
-            <Trophy className="w-5 h-5" />
-            Leadership Board
+            <Book className="w-5 h-5" />
+            Our Assigned Tutors
           </button>
         </div>
       </section>

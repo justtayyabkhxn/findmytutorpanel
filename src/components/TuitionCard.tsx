@@ -53,9 +53,9 @@ export default function TutorCard({ tutor }: TutorCardProps) {
       <Link
         href={`/tutors/${tutor._id}`}
         onClick={() => setClicked(true)}
-        className={`flex items-center gap-1 text-sm font-semibold px-4 py-2 rounded-full shadow transition ${
+        className={`flex items-center gap-1 text-sm font-semibold px-4 py-2 rounded-full shadow transition-transform duration-150 active:scale-95 ${
           clicked
-            ? "bg-[#1B1E24] text-[#E4D7BD]" // Dark after click
+            ? "bg-[#1B1E24] text-[#E4D7BD]"
             : "bg-[#E4D7BD] text-[#1B1E24] hover:bg-[#9A8F7C] hover:text-[#E4D7BD]"
         }`}
       >

@@ -93,7 +93,7 @@ export default function AdminPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const method = editingId ? "PATCH" : "POST";
-    const url = editingId ? `/api/tutors/${editingId}` : "/api/tutors";
+    const url = editingId ? `${baseUrl}/api/tutors/${editingId}` : `${baseUrl}/api/tutors`;
 
     await fetch(url, {
       method,
