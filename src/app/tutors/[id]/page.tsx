@@ -7,6 +7,8 @@ import {
   BookOpen,
 } from "lucide-react";
 
+const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+
 interface Student {
   name: string;
 }
@@ -34,7 +36,7 @@ export default async function TutorDetails({
 
   // 1️⃣ Fetch tutor details
   const res = await fetch(
-    `/api/tutors/${id}`,
+    `${baseUrl}/api/tutors/${id}`,
     { cache: "no-store" }
   );
   if (!res.ok) return <div className="text-red-500">Tutor not found</div>;
@@ -46,7 +48,7 @@ export default async function TutorDetails({
     ? await Promise.all(
         tutor.assignedTuitions.map(async (tuitionId: string) => {
           const tuitionRes = await fetch(
-            `/api/assign-tuition/${tuitionId}`,
+            `${baseUrl}/api/assign-tuition/${tuitionId}`,
             { cache: "no-store" }
           );
           if (!tuitionRes.ok) return null;

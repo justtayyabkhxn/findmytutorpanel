@@ -1,6 +1,8 @@
 import TutorCard from "@/components/TuitionCard";
 import { Users, Trophy } from "lucide-react";
 
+const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+
 interface Tutor {
   _id: string;
   name: string;
@@ -11,7 +13,7 @@ interface Tutor {
 }
 
 export default async function Home() {
-  const res = await fetch(`/api/tutors`);
+  const res = await fetch(`${baseUrl}/api/tutors`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch tutors");

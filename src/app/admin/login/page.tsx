@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Lock } from "lucide-react";
 
+const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+
+
 export default function AdminLogin() {
   const router = useRouter();
   const fixedEmail = "admin@findmytutor.com";
@@ -14,7 +17,7 @@ export default function AdminLogin() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("/api/admin-login", {
+    const res = await fetch(`${baseUrl}/api/admin-logi`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: fixedEmail, password }),

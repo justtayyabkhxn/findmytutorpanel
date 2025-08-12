@@ -1,6 +1,9 @@
 import { Users } from "lucide-react";
 import TutorCard from "@/components/TuitionCard"; // adjust path as needed
 
+const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+
+
 interface Tuition {
   _id: string;
   description: string;
@@ -25,7 +28,7 @@ interface Tutor {
 }
 
 export default async function AssignedTutors() {
-  const res = await fetch(`/api/tutors`, {
+  const res = await fetch(`${baseUrl}/api/tutors`, {
     cache: "no-store",
   });
 
@@ -41,7 +44,7 @@ export default async function AssignedTutors() {
         ? await Promise.all(
             t.assignedTuitions.map(async (tuitionId) => {
               const tuitionRes = await fetch(
-                `/api/assign-tuition/${tuitionId}`,
+                `${baseUrl}/api/assign-tuition/${tuitionId}`,
                 { cache: "no-store" }
               );
               if (!tuitionRes.ok) return null;

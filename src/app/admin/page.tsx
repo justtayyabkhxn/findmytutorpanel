@@ -4,6 +4,8 @@ import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Edit, Trash2, Plus, BookOpen, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+
 interface Tutor {
   _id: string;
   name: string;
@@ -60,7 +62,7 @@ export default function AdminPage() {
       if (tutor.assignedTuitions && tutor.assignedTuitions.length > 0) {
         const tuitions = await Promise.all(
           tutor.assignedTuitions.map(async (tuitionId) => {
-            const res = await fetch(`/api/assign-tuition/${tuitionId}`);
+            const res = await fetch(`${baseUrl}/api/assign-tuition/${tuitionId}`);
             if (!res.ok) return null;
             return res.json();
           })
@@ -74,7 +76,7 @@ export default function AdminPage() {
   };
 
   const fetchTutors = async () => {
-    const res = await fetch("/api/tutors");
+    const res = await fetch(`{${baseUrl}/api/tutors`);
     if (!res.ok) {
       console.error("Failed to fetch tutors");
       return;
@@ -105,7 +107,7 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/tutors/${id}`, { method: "DELETE" });
+    await fetch(`${baseUrl}/api/tutors/${id}`, { method: "DELETE" });
     fetchTutors();
   };
 
@@ -113,7 +115,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!assignId) return;
 
-    const res = await fetch("/api/assign-tuition", {
+    const res = await fetch(`${baseUrl}/api/assign-tuition`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ description: tuitionDesc, tutorId: assignId }),
