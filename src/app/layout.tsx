@@ -40,30 +40,30 @@ export default function RootLayout({
 
             {/* Nav */}
             <nav className="flex items-center gap-8 text-base font-semibold">
-              <Link
+              <a
                 href="/"
                 className="relative flex items-center gap-2 text-[#E4D7BD] hover:text-[#9A8F7C] transition-colors duration-300"
               >
                 <Home size={18} />
                 Home
                 <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-[#9A8F7C] scale-x-0 origin-left transition-transform duration-300 hover:scale-x-100"></span>
-              </Link>
-              <Link
+              </a>
+              <a
                 href="/assigned-tutors"
                 className="relative flex items-center gap-2 text-[#E4D7BD] hover:text-[#9A8F7C] transition-colors duration-300"
               >
                 <Users size={18} />
                 Assigned Tutors
                 <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-[#9A8F7C] scale-x-0 origin-left transition-transform duration-300 hover:scale-x-100"></span>
-              </Link>
-              <Link
+              </a>
+              {/* <Link
                 href="/leadership-board"
                 className="relative flex items-center gap-2 text-[#E4D7BD] hover:text-[#9A8F7C] transition-colors duration-300"
               >
                 <Trophy size={18} />
                 Leardership Board
                 <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-[#9A8F7C] scale-x-0 origin-left transition-transform duration-300 hover:scale-x-100"></span>
-              </Link>
+              </Link> */}
             </nav>
           </div>
         </header>

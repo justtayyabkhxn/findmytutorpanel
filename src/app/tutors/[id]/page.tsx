@@ -1,4 +1,3 @@
-import React from "react";
 import {
   User,
   GraduationCap,
@@ -7,7 +6,7 @@ import {
   BookOpen,
 } from "lucide-react";
 
-const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface Student {
   name: string;
@@ -34,16 +33,19 @@ export default async function TutorDetails({
 }) {
   const { id } = await params;
 
-  // 1️⃣ Fetch tutor details
-  const res = await fetch(
-    `${baseUrl}/api/tutors/${id}`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) return <div className="text-red-500">Tutor not found</div>;
+  // Fetch tutor details
+  const res = await fetch(`${baseUrl}/api/tutors/${id}`, { cache: "no-store" });
+  if (!res.ok) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-400 font-bold">
+        Tutor not found
+      </div>
+    );
+  }
 
   const tutor: Tutor = await res.json();
 
-  // 2️⃣ Fetch full tuition details for each assigned tuition ID
+  // Fetch full tuition details for each assigned tuition ID
   const assignedTuitions: Tuition[] = tutor.assignedTuitions?.length
     ? await Promise.all(
         tutor.assignedTuitions.map(async (tuitionId: string) => {
@@ -52,64 +54,90 @@ export default async function TutorDetails({
             { cache: "no-store" }
           );
           if (!tuitionRes.ok) return null;
-          return tuitionRes.json() as Promise<Tuition>;
+          return (tuitionRes.json()) as Promise<Tuition>;
         })
       ).then((tuitions) => tuitions.filter((t): t is Tuition => t !== null))
     : [];
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8">
-      {/* Tutor Header */}
-      <div className="border-b pb-4 mb-6 flex items-center gap-3">
-        <User className="text-gray-700" size={32} />
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">{tutor.name}</h1>
-          <p className="text-gray-500 text-sm flex items-center gap-1">
-            <Calendar size={16} />
-            Joined on {new Date(tutor.dateJoined).toLocaleDateString()}
-          </p>
+    <div
+      className="min-h-screen relative overflow-hidden text-[#E4D7BD]"
+      style={{
+        backgroundImage: "url('/bg.jpg')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
+        backgroundPosition: "top left",
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-[#0F1115]/80 z-0"></div>
+
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-16">
+        {/* Header */}
+        <div className="bg-[#2B2F37]/80 border border-[#4B4A45] rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center gap-4 border-b border-[#4B4A45] pb-4 mb-6">
+            <User className="text-[#9A8F7C]" size={40} />
+            <div>
+              <h1 className="text-3xl font-bold text-[#E4D7BD] drop-shadow-[0_2px_6px_rgba(154,143,124,0.3)]">
+                {tutor.name}
+              </h1>
+              <p className="text-[#E4D7BD]/70 text-sm flex items-center gap-2">
+                <Calendar size={16} className="text-[#9A8F7C]" />
+                Joined on{" "}
+                {new Date(tutor.dateJoined).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "2-digit",
+                })}
+              </p>
+            </div>
+          </div>
+
+          {/* Tutor details */}
+          <div className="space-y-3">
+            <p className="flex items-center gap-2 text-[#E4D7BD]/90">
+              <GraduationCap size={18} className="text-[#9A8F7C]" />
+              <span className="font-semibold">Qualification:</span>{" "}
+              {tutor.qualification}
+            </p>
+            <p className="flex items-center gap-2 text-[#E4D7BD]/90">
+              <Briefcase size={18} className="text-[#9A8F7C]" />
+              <span className="font-semibold">Experience:</span>{" "}
+              {tutor.experience} years
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Tutor Details */}
-      <div className="space-y-3">
-        <p className="flex items-center gap-2">
-          <GraduationCap size={18} className="text-gray-600" />
-          <span className="font-semibold">Qualification:</span>{" "}
-          {tutor.qualification}
-        </p>
-        <p className="flex items-center gap-2">
-          <Briefcase size={18} className="text-gray-600" />
-          <span className="font-semibold">Experience:</span>{" "}
-          {tutor.experience} years
-        </p>
-      </div>
-
-      {/* Assigned Tuitions */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <BookOpen size={20} className="text-gray-700" />
-          Assigned Tuitions
-        </h2>
-        {assignedTuitions.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No tuitions assigned.</p>
-        ) : (
-          <ul className="space-y-2">
-            {assignedTuitions.map((tu, index) => (
-              <li
-                key={tu._id || index}
-                className="p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition"
-              >
-                <p className="font-medium">{tu.description}</p>
-                {tu.student && (
-                  <p className="text-sm text-gray-500">
-                    Student: {tu.student.name}
+        {/* Assigned Tuitions */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-[#E4D7BD] drop-shadow-[0_2px_6px_rgba(228,215,189,0.3)]">
+            <BookOpen size={20} className="text-[#9A8F7C]" />
+            Assigned Tuitions
+          </h2>
+          {assignedTuitions.length === 0 ? (
+            <p className="text-sm text-[#E4D7BD]/60 italic">
+              No tuitions assigned.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {assignedTuitions.map((tu, index) => (
+                <li
+                  key={tu._id || index}
+                  className="p-4 bg-[#2B2F37]/60 border border-[#4B4A45] rounded-lg hover:bg-[#9A8F7C]/10 transition"
+                >
+                  <p className="font-medium text-[#E4D7BD]">
+                    {tu.description}
                   </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+                  {tu.student && (
+                    <p className="text-sm text-[#E4D7BD]/70">
+                      Student: {tu.student.name}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
