@@ -17,7 +17,7 @@ export default function AdminLogin() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch(`${baseUrl}/api/admin-logi`, {
+    const res = await fetch(`${baseUrl}/api/admin-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: fixedEmail, password }),
@@ -72,7 +72,7 @@ export default function AdminLogin() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
-            className="pl-12 w-full rounded-xl border border-yellow-300 p-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition"
+            className="pl-12 w-full rounded-xl border border-yellow-300 text-yellow-700 p-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition"
           />
         </label>
 

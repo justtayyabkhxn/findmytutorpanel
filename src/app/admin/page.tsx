@@ -75,8 +75,9 @@ export default function AdminPage() {
     setAssignedTuitionsMap(map);
   };
 
-  const fetchTutors = async () => {
-    const res = await fetch(`{${baseUrl}/api/tutors`);
+const fetchTutors = async () => {
+  try {
+    const res = await fetch(`${baseUrl}/api/tutors`);
     if (!res.ok) {
       console.error("Failed to fetch tutors");
       return;
@@ -84,11 +85,15 @@ export default function AdminPage() {
     const data: Tutor[] = await res.json();
     setTutors(data);
     fetchAssignedTuitions(data);
-  };
+  } catch (error) {
+    console.error("Error fetching tutors:", error);
+  }
+};
+
 
   useEffect(() => {
     fetchTutors();
-  }, [tutors]);
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
