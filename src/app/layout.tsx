@@ -1,7 +1,7 @@
 import "./globals.css";
 import React from "react";
 import Link from "next/link";
-import { Home,  Users } from "lucide-react"; // Lucide icons
+import { Home, Users } from "lucide-react"; // Lucide icons
 
 export const metadata = {
   title: "FindMyTutor Panel",
@@ -40,22 +40,22 @@ export default function RootLayout({
 
             {/* Nav */}
             <nav className="flex items-center gap-8 text-base font-semibold">
-              <a
+              <Link
                 href="/"
                 className="relative flex items-center gap-2 text-[#E4D7BD] hover:text-[#9A8F7C] transition-colors duration-300"
               >
                 <Home size={18} />
                 Home
                 <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-[#9A8F7C] scale-x-0 origin-left transition-transform duration-300 hover:scale-x-100"></span>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/assigned-tutors"
                 className="relative flex items-center gap-2 text-[#E4D7BD] hover:text-[#9A8F7C] transition-colors duration-300"
               >
                 <Users size={18} />
                 Assigned Tutors
                 <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-[#9A8F7C] scale-x-0 origin-left transition-transform duration-300 hover:scale-x-100"></span>
-              </a>
+              </Link>
               {/* <Link
                 href="/leadership-board"
                 className="relative flex items-center gap-2 text-[#E4D7BD] hover:text-[#9A8F7C] transition-colors duration-300"
