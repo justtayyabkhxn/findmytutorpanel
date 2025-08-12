@@ -1,7 +1,7 @@
 import "./globals.css";
 import React from "react";
 import Link from "next/link";
-import { Home, Trophy, Users } from "lucide-react"; // Lucide icons
+import { Home,  Users } from "lucide-react"; // Lucide icons
 
 export const metadata = {
   title: "FindMyTutor Panel",
