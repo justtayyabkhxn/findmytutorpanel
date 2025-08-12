@@ -11,9 +11,7 @@ interface Tutor {
 }
 
 export default async function Home() {
-  const res = await fetch(`/api/tutors`, {
-    cache: "no-store",
-  });
+  const res = await fetch(`/api/tutors`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch tutors");
