@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 
@@ -14,6 +17,8 @@ interface TutorCardProps {
 }
 
 export default function TutorCard({ tutor }: TutorCardProps) {
+  const [clicked, setClicked] = useState(false);
+
   return (
     <div className="flex items-center justify-between bg-[#2B2F37]/80 border border-[#4B4A45] rounded-2xl p-4 shadow-lg hover:shadow-[#9A8F7C]/20 transition-all duration-300">
       {/* Left Date/Tag Box */}
@@ -47,7 +52,12 @@ export default function TutorCard({ tutor }: TutorCardProps) {
       {/* Right Action Button */}
       <Link
         href={`/tutors/${tutor._id}`}
-        className="flex items-center gap-1 text-sm font-semibold bg-[#E4D7BD] text-[#1B1E24] px-4 py-2 rounded-full shadow hover:bg-[#9A8F7C] hover:text-[#E4D7BD] transition"
+        onClick={() => setClicked(true)}
+        className={`flex items-center gap-1 text-sm font-semibold px-4 py-2 rounded-full shadow transition ${
+          clicked
+            ? "bg-[#1B1E24] text-[#E4D7BD]" // Dark after click
+            : "bg-[#E4D7BD] text-[#1B1E24] hover:bg-[#9A8F7C] hover:text-[#E4D7BD]"
+        }`}
       >
         View <ArrowRight size={14} />
       </Link>
