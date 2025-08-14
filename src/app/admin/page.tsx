@@ -7,7 +7,7 @@ import {
   ChangeEvent,
   useCallback,
 } from "react";
-import { Edit, Trash2, Plus, BookOpen, Save } from "lucide-react";
+import { Edit, Trash2, Plus, BookOpen, Save, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import EditAssignedTuitionsModal from "@/components/EditAssign";
 
@@ -192,11 +192,28 @@ export default function AdminPage() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+
+    router.push("/admin/login");
+  };
   return (
     <div className="p-8 max-w-6xl mx-auto font-sans">
-      <h1 className="text-4xl font-extrabold mb-8 text-pink-100 tracking-tight drop-shadow-lg">
-        📚 Tutor Admin Panel
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+  <h1 className="text-4xl font-extrabold text-pink-100 tracking-tight drop-shadow-lg">
+    📚 Tutor Admin Panel
+  </h1>
+
+  <button
+    onClick={handleLogout}
+    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+  >
+    <LogOut size={18} />
+    Logout
+  </button>
+</div>
+
       {/* Add/Edit Tutor Form */}
       <form
         onSubmit={handleSubmit}

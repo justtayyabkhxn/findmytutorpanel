@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   const { email, password } = await request.json();
 
   const ADMIN_EMAIL = "admin@findmytutor.com";
-  const ADMIN_PASSWORD = "anas";
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
     // Create JWT payload
