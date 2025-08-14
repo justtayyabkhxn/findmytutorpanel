@@ -1,22 +1,9 @@
-import { Users } from "lucide-react";
-import TutorCard from "@/components/TuitionCard"; // adjust path as needed
+"use client";
 
-const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+import { useEffect, useState, useRef } from "react";
+import TutorCard from "@/components/TuitionCard";
 
-
-interface Tuition {
-  _id: string;
-  description: string;
-}
-
-interface TutorRaw {
-  _id: string;
-  name: string;
-  qualification: string;
-  experience: number;
-  dateJoined: string;
-  assignedTuitions?: string[]; // from API: tuition IDs
-}
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface Tutor {
   _id: string;
@@ -24,45 +11,44 @@ interface Tutor {
   qualification: string;
   experience: number;
   dateJoined: string;
-  assignedTuitions: Tuition[]; // fully populated
+  assignedTuitions: [string, string][]; // [tuitionId, date]
 }
 
-export default async function AssignedTutors() {
-  const res = await fetch(`${baseUrl}/api/tutors`, {
-    cache: "no-store",
-  });
+export default function AssignedTutors() {
+  const [assigned, setAssigned] = useState<Tutor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch tutors");
-  }
+  useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
 
-  const tutors: TutorRaw[] = await res.json();
+    async function fetchTutors() {
+      try {
+        const res = await fetch(`${baseUrl}/api/tutors`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch tutors");
 
-  const tutorsWithDetails: Tutor[] = await Promise.all(
-    tutors.map(async (t) => {
-      const assignedTuitions: Tuition[] = t.assignedTuitions?.length
-        ? await Promise.all(
-            t.assignedTuitions.map(async (tuitionId) => {
-              const tuitionRes = await fetch(
-                `${baseUrl}/api/assign-tuition/${tuitionId}`,
-                { cache: "no-store" }
-              );
-              if (!tuitionRes.ok) return null;
-              return (await tuitionRes.json()) as Tuition;
-            })
-          ).then((results) => results.filter(Boolean) as Tuition[])
-        : [];
+        const tutors: Tutor[] = await res.json();
 
-      return {
-        ...t,
-        assignedTuitions,
-      };
-    })
-  );
+        // Filter tutors with assignedTuitions and sort by the latest date
+        const filtered = tutors
+          .filter(t => Array.isArray(t.assignedTuitions) && t.assignedTuitions.length > 0)
+          .sort((a, b) => {
+            const aDate = new Date(a.assignedTuitions[a.assignedTuitions.length - 1][1]).getTime();
+            const bDate = new Date(b.assignedTuitions[b.assignedTuitions.length - 1][1]).getTime();
+            return bDate - aDate; // Descending (most recent first)
+          });
 
-  const assigned = tutorsWithDetails.filter(
-    (t) => t.assignedTuitions.length > 0
-  );
+        setAssigned(filtered);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTutors();
+  }, []);
 
   return (
     <div
@@ -72,17 +58,18 @@ export default async function AssignedTutors() {
         backgroundRepeat: "repeat",
         backgroundSize: "auto",
         backgroundPosition: "top left",
+        backgroundAttachment: "fixed",
+        minHeight: "100vh",
       }}
     >
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-[#0F1115]/80 z-0"></div>
+      <div className="absolute inset-0 bg-[#0F1115]/90 z-0"></div>
 
       {/* Hero Section */}
       <section className="relative text-center py-10 px-6 z-10">
         <div className="max-w-4xl mx-auto relative z-10 items-center">
           <center>
-
-          <img src="/logo.png" width={100} height={100}></img>
+            <img src="/logo.png" width={100} height={100} alt="Logo" />
           </center>
           <h1 className="text-2xl lg:text-5xl md:text-5xl font-extrabold flex justify-center items-center gap-3 drop-shadow-[0_4px_15px_rgba(154,143,124,0.4)]">
             Tutors with Assigned Tuitions
@@ -98,7 +85,9 @@ export default async function AssignedTutors() {
         <h2 className="text-3xl font-bold text-[#E4D7BD] mb-10 drop-shadow-[0_2px_10px_rgba(228,215,189,0.3)]">
           All Assigned Tutors
         </h2>
-        {assigned.length === 0 ? (
+        {loading ? (
+          <p className="text-[#E4D7BD]/60 italic">Loading...</p>
+        ) : assigned.length === 0 ? (
           <p className="text-[#E4D7BD]/60 italic">
             No tutors have assigned tuitions yet.
           </p>

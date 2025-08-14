@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import {
+  useState,
+  useEffect,
+  FormEvent,
+  ChangeEvent,
+  useCallback,
+} from "react";
 import { Edit, Trash2, Plus, BookOpen, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
+import EditAssignedTuitionsModal from "@/components/EditAssign";
 
-const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface Tutor {
   _id: string;
@@ -12,7 +19,7 @@ interface Tutor {
   experience: number;
   dateJoined: string;
   qualification: string;
-  assignedTuitions: string[];
+  assignedTuitions: [string, string][]; // [tuitionId, date]
 }
 
 interface TutorForm {
@@ -39,82 +46,16 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [assignId, setAssignId] = useState<string | null>(null);
   const [tuitionDesc, setTuitionDesc] = useState<string>("");
-
-  // Map of tutorId -> array of assigned tuitions details
   const [assignedTuitionsMap, setAssignedTuitionsMap] = useState<{
     [key: string]: Tuition[];
   }>({});
 
   const router = useRouter();
 
-  // Check auth token on mount
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.replace("/admin/login");
-    }
-  }, [router]);
+  const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
-  // Fetch assigned tuition details for each tutor
-  const fetchAssignedTuitions = async (tutors: Tutor[]) => {
-    const map: { [key: string]: Tuition[] } = {};
-    for (const tutor of tutors) {
-      if (tutor.assignedTuitions && tutor.assignedTuitions.length > 0) {
-        const tuitions = await Promise.all(
-          tutor.assignedTuitions.map(async (tuitionId) => {
-            const res = await fetch(`${baseUrl}/api/assign-tuition/${tuitionId}`);
-            if (!res.ok) return null;
-            return res.json();
-          })
-        );
-        map[tutor._id] = tuitions.filter(Boolean) as Tuition[];
-      } else {
-        map[tutor._id] = [];
-      }
-    }
-    setAssignedTuitionsMap(map);
-  };
-
-const fetchTutors = async () => {
-  try {
-    const res = await fetch(`${baseUrl}/api/tutors`);
-    if (!res.ok) {
-      console.error("Failed to fetch tutors");
-      return;
-    }
-    const data: Tutor[] = await res.json();
-    setTutors(data);
-    fetchAssignedTuitions(data);
-  } catch (error) {
-    console.error("Error fetching tutors:", error);
-  }
-};
-
-
-  useEffect(() => {
-    fetchTutors();
-  }, []);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const method = editingId ? "PATCH" : "POST";
-    const url = editingId ? `${baseUrl}/api/tutors/${editingId}` : `${baseUrl}/api/tutors`;
-
-    await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-
-    setForm({ name: "", experience: "", dateJoined: "", qualification: "" });
-    setEditingId(null);
-    fetchTutors();
-  };
-
-  const handleDelete = async (id: string) => {
-    await fetch(`${baseUrl}/api/tutors/${id}`, { method: "DELETE" });
-    fetchTutors();
-  };
+  const [assignDate, setAssignDate] = useState<string>("");
 
   const handleAssign = async (e: FormEvent) => {
     e.preventDefault();
@@ -123,18 +64,86 @@ const fetchTutors = async () => {
     const res = await fetch(`${baseUrl}/api/assign-tuition`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: tuitionDesc, tutorId: assignId }),
+      body: JSON.stringify({
+        tutorId: assignId,
+        tuition: tuitionDesc, // could be tuitionId if using existing ones
+        date: assignDate || new Date().toISOString(),
+      }),
     });
 
     if (res.ok) {
       setAssignId(null);
       setTuitionDesc("");
-      fetchTutors();
+      setAssignDate("");
+      await fetchTutors();
     } else {
       console.error("Failed to assign tuition");
     }
   };
 
+  // ✅ Check auth token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.replace("/admin/login");
+    }
+  }, [router]);
+
+
+  // ✅ Fetch tutors (memoized)
+  const fetchTutors = useCallback(async () => {
+    try {
+      const res = await fetch(`${baseUrl}/api/tutors`, { cache: "no-store" });
+      if (!res.ok) {
+        console.error("Failed to fetch tutors");
+        return;
+      }
+      const data: Tutor[] = await res.json();
+      setTutors(data);
+    } catch (error) {
+      console.error("Error fetching tutors:", error);
+    }
+  }, []);
+
+  // ✅ Run once on mount
+  useEffect(() => {
+    fetchTutors();
+  }, [fetchTutors]);
+
+  // Add Tutor / Update Tutor
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const method = editingId ? "PATCH" : "POST";
+    const url = editingId
+      ? `${baseUrl}/api/tutors/${editingId}`
+      : `${baseUrl}/api/tutors`;
+
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    if (res.ok) {
+      setForm({ name: "", experience: "", dateJoined: "", qualification: "" });
+      setEditingId(null);
+      await fetchTutors();
+    }
+  };
+
+  // Delete Tutor
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`${baseUrl}/api/tutors/${id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      await fetchTutors();
+    }
+  };
+
+  // Assign Tuitio
+
+  // Form change handler
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -142,6 +151,7 @@ const fetchTutors = async () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // CSV generator
   const convertToCSV = () => {
     const headers = [
       "Name",
@@ -154,7 +164,7 @@ const fetchTutors = async () => {
     const rows = tutors.map((tutor) => {
       const assignedTuitions =
         assignedTuitionsMap[tutor._id]
-          ?.map((t) => t.description.replace(/"/g, '""')) // escape quotes
+          ?.map((t) => t.description.replace(/"/g, '""'))
           .join("; ") || "";
 
       return [
@@ -169,7 +179,7 @@ const fetchTutors = async () => {
     return [headers.join(","), ...rows].join("\n");
   };
 
-  // Trigger CSV download
+  // CSV download trigger
   const downloadCSV = () => {
     const csv = convertToCSV();
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -182,17 +192,15 @@ const fetchTutors = async () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
-
   return (
     <div className="p-8 max-w-6xl mx-auto font-sans">
-      <h1 className="text-4xl font-extrabold mb-8 text-white tracking-tight">
+      <h1 className="text-4xl font-extrabold mb-8 text-pink-100 tracking-tight drop-shadow-lg">
         📚 Tutor Admin Panel
       </h1>
-
       {/* Add/Edit Tutor Form */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 p-6 bg-gradient-to-r from-blue-50 via-white to-blue-50 rounded-2xl shadow-lg border border-gray-100"
+        className="space-y-4 p-6 bg-gradient-to-r from-pink-50 to-purple-50 rounded-3xl shadow-lg border border-pink-100"
       >
         <div className="grid grid-cols-1 text-gray-900 md:grid-cols-2 gap-5">
           <input
@@ -201,7 +209,7 @@ const fetchTutors = async () => {
             placeholder="Tutor Name"
             value={form.name}
             onChange={handleInputChange}
-            className="border border-gray-200 p-3 rounded-xl w-full focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            className="border border-pink-200 p-3 rounded-2xl w-full focus:ring-2 focus:ring-pink-300 focus:outline-none"
             required
           />
           <input
@@ -210,7 +218,7 @@ const fetchTutors = async () => {
             placeholder="Experience (years)"
             value={form.experience}
             onChange={handleInputChange}
-            className="border border-gray-200 p-3 rounded-xl w-full focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            className="border border-pink-200 p-3 rounded-2xl w-full focus:ring-2 focus:ring-pink-300 focus:outline-none"
             required
           />
           <input
@@ -218,7 +226,7 @@ const fetchTutors = async () => {
             name="dateJoined"
             value={form.dateJoined}
             onChange={handleInputChange}
-            className="border border-gray-200 p-3 rounded-xl w-full focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            className="border border-pink-200 p-3 rounded-2xl w-full focus:ring-2 focus:ring-pink-300 focus:outline-none"
             required
           />
           <input
@@ -227,139 +235,157 @@ const fetchTutors = async () => {
             placeholder="Qualification"
             value={form.qualification}
             onChange={handleInputChange}
-            className="border border-gray-200 p-3 rounded-xl w-full focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            className="border border-pink-200 p-3 rounded-2xl w-full focus:ring-2 focus:ring-pink-300 focus:outline-none"
             required
           />
         </div>
         <button
           type="submit"
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-gray-800 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+          className="flex items-center gap-2 bg-pink-400 hover:bg-pink-500 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
         >
           {editingId ? <Save size={18} /> : <Plus size={18} />}
           {editingId ? "Update Tutor" : "Add Tutor"}
         </button>
       </form>
-
-      <div className=" mt-5 text-right">
+      <div className="mt-5 text-right">
         <button
           onClick={downloadCSV}
-          className="inline-flex cursor-pointer items-center gap-2 bg-purple-600 hover:bg-purple-700 text-gray-800 px-4 py-2 rounded-xl font-semibold transition shadow-md"
+          className="inline-flex cursor-pointer items-center gap-2 bg-purple-400 hover:bg-purple-500 text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
         >
-          {/* You can use any icon here, for example: */}
           <Plus size={18} />
           Download CSV
         </button>
       </div>
-
       {/* Tutor List */}
-<div className="mt-10 bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-  {/* Wrap table in a horizontally scrollable container */}
-  <div className="overflow-x-auto w-full text-gray-900">
-    <table className="w-full border-collapse min-w-[600px]">
-      <thead className="bg-gray-50">
-            <tr>
-              <th className="p-4 text-left text-sm font-semibold text-gray-800">
-                Name
-              </th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-800">
-                Experience
-              </th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-800">
-                Date Joined
-              </th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-800">
-                Qualification
-              </th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-800">
-                Assigned Tuitions
-              </th>
-              <th className="p-4 text-center text-sm font-semibold text-gray-600">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {tutors.map((tutor) => (
-              <tr
-                key={tutor._id}
-                className="hover:bg-blue-50 transition-colors duration-200"
-              >
-                <td className="p-4">{tutor.name}</td>
-                <td className="p-4">{tutor.experience}</td>
-                <td className="p-4">
-                  {new Date(tutor.dateJoined).toLocaleDateString()}
-                </td>
-                <td className="p-4">{tutor.qualification}</td>
-                <td className="p-4 max-w-xs">
-                  {assignedTuitionsMap[tutor._id] &&
-                  assignedTuitionsMap[tutor._id].length > 0 ? (
-                    <ul className="list-disc list-inside text-sm text-gray-900 max-w-xs">
-                      {assignedTuitionsMap[tutor._id].map((tuition) => (
-                        <li key={tuition._id}>{tuition.description}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-xs italic text-gray-800">
-                      No tuitions assigned
-                    </p>
-                  )}
-                </td>
-                <td className="p-4 flex gap-2 justify-center">
-                  <button
-                    onClick={() => {
-                      setForm({
-                        name: tutor.name,
-                        experience: tutor.experience.toString(),
-                        dateJoined: tutor.dateJoined.split("T")[0],
-                        qualification: tutor.qualification,
-                      });
-                      setEditingId(tutor._id);
-                    }}
-                    className="flex items-center gap-1 bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-1 rounded-lg shadow-sm"
+      <div className="mt-10 bg-white rounded-3xl shadow-lg overflow-hidden border border-pink-100">
+        <div className="overflow-x-auto w-full text-gray-900">
+          <table className="w-full border-collapse min-w-[600px]">
+            <thead className="bg-gradient-to-r from-pink-100 to-purple-100">
+              <tr>
+                {[
+                  "Name",
+                  "Experience",
+                  "Date Joined",
+                  "Qualification",
+                  "Assigned Tuitions",
+                  "Actions",
+                ].map((head) => (
+                  <th
+                    key={head}
+                    className="p-4 text-left text-sm font-semibold text-gray-700"
                   >
-                    <Edit size={16} /> Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(tutor._id)}
-                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-gray-900 px-3 py-1 rounded-lg shadow-sm"
-                  >
-                    <Trash2 size={16} /> Delete
-                  </button>
-                  <button
-                    onClick={() => setAssignId(tutor._id)}
-                    className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-gray-800 px-3 py-1 rounded-lg shadow-sm"
-                  >
-                    <BookOpen size={16} /> Assign
-                  </button>
-                </td>
+                    {head}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      </div>
+            </thead>
+            <tbody>
+              {tutors.map((tutor) => (
+                <tr
+                  key={tutor._id}
+                  className="hover:bg-pink-50 transition-colors duration-200"
+                >
+                  <td className="p-4">{tutor.name}</td>
+                  <td className="p-4">{tutor.experience}</td>
+                  <td className="p-4">
+                    {new Date(tutor.dateJoined).toLocaleDateString()}
+                  </td>
+                  <td className="p-4">{tutor.qualification}</td>
+                  <td className="p-4 max-w-xs">
+                    {tutor.assignedTuitions?.length > 0 ? (
+                      <ul className="list-disc list-inside text-sm text-gray-900 max-w-xs">
+                        {tutor.assignedTuitions.map(
+                          ([tuitionName, assignedDate], idx) => (
+                            <li key={idx}>
+                              {tuitionName} —{" "}
+                              <span className="text-gray-500">
+                                {new Date(assignedDate).toLocaleString()}
+                              </span>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    ) : (
+                      <p className="text-xs italic text-gray-500">
+                        No tuitions assigned
+                      </p>
+                    )}
+                  </td>
 
+                  <td className="p-4 flex gap-2 justify-center">
+                    <button
+                      onClick={() => {
+                        setForm({
+                          name: tutor.name,
+                          experience: tutor.experience.toString(),
+                          dateJoined: tutor.dateJoined.split("T")[0],
+                          qualification: tutor.qualification,
+                        });
+                        setEditingId(tutor._id);
+                      }}
+                      className="flex items-center gap-1 bg-yellow-300 hover:bg-yellow-400 text-gray-800 px-3 py-1 rounded-full shadow-sm transition"
+                    >
+                      <Edit size={16} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(tutor._id)}
+                      className="flex items-center gap-1 bg-red-300 hover:bg-red-400 text-gray-800 px-3 py-1 rounded-full shadow-sm transition"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                    <button
+                      onClick={() => setAssignId(tutor._id)}
+                      className="flex items-center gap-1 bg-green-300 hover:bg-green-400 text-gray-800 px-3 py-1 rounded-full shadow-sm transition"
+                    >
+                      <BookOpen size={16} /> Assign
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedTutor(tutor);
+                        setEditModalOpen(true);
+                      }}
+                      className="flex items-center gap-1 bg-orange-300 hover:bg-orange-400 text-gray-800 px-3 py-1 rounded-full shadow-sm transition"
+                    >
+                      Edit Assign
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
       {/* Assign Tuition Form */}
       {assignId && (
         <form
           onSubmit={handleAssign}
-          className="mt-6 p-6 bg-gradient-to-r from-green-50 to-white rounded-2xl shadow-lg border border-gray-100 space-y-4"
+          className="mt-6 p-6 bg-white rounded-3xl text-black shadow-lg space-y-4"
         >
           <h2 className="text-lg font-bold text-gray-800">
             Assign Tuition to {tutors.find((t) => t._id === assignId)?.name}
           </h2>
+
           <textarea
             placeholder="Enter tuition description..."
             value={tuitionDesc}
             onChange={(e) => setTuitionDesc(e.target.value)}
-            className="border border-gray-200 p-3 w-full rounded-xl focus:ring-2 focus:ring-green-400 resize-none"
+            className="border border-green-200 p-3 w-full rounded-2xl focus:ring-2 focus:ring-green-300 resize-none"
             rows={4}
             required
           />
+
+          <input
+            type="datetime-local"
+            value={assignDate}
+            onChange={(e) => setAssignDate(e.target.value)}
+            className="border border-green-200 p-3 w-full rounded-2xl focus:ring-2 focus:ring-green-300"
+            required
+          />
+
           <div className="flex gap-3">
             <button
               type="submit"
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-gray-800 px-5 py-2 rounded-lg shadow-md transition"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-full shadow-md transition"
             >
               <BookOpen size={18} /> Assign Tuition
             </button>
@@ -368,14 +394,22 @@ const fetchTutors = async () => {
               onClick={() => {
                 setAssignId(null);
                 setTuitionDesc("");
+                setAssignDate("");
               }}
-              className="bg-gray-400 hover:bg-gray-500 text-gray-900 px-5 py-2 rounded-lg shadow-md transition"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-full shadow-md transition"
             >
               Cancel
             </button>
           </div>
         </form>
       )}
+      <EditAssignedTuitionsModal
+        tutor={selectedTutor}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onUpdate={fetchTutors} // your function to refresh data
+      />
+      ;
     </div>
   );
 }

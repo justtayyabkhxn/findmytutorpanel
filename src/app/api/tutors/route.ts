@@ -6,10 +6,16 @@ import Tutor from "@/lib/models/Tutor";
 export async function GET() {
   try {
     await connectDB();
-    const tutors = await Tutor.find();
+
+    // Just fetch tutors, newest first
+    const tutors = await Tutor.find().sort({ createdAt: -1 });
+
     return NextResponse.json(tutors);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch tutors"+error }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch tutors: " + error },
+      { status: 500 }
+    );
   }
 }
 
@@ -24,10 +30,14 @@ export async function POST(req: Request) {
       experience: Number(body.experience),
       dateJoined: new Date(body.dateJoined),
       qualification: body.qualification,
+      assignedTuitions: body.assignedTuitions || [] // Accept array of [tuitionName, assignedTime]
     });
 
     return NextResponse.json(tutor, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to create tutor"+error }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create tutor: " + error },
+      { status: 500 }
+    );
   }
 }

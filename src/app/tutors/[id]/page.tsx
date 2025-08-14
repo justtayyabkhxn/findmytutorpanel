@@ -8,22 +8,14 @@ import {
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-interface Student {
-  name: string;
-}
 
-interface Tuition {
-  _id?: string;
-  description: string;
-  student?: Student;
-}
 
 interface Tutor {
   name: string;
   qualification: string;
   experience: number;
   dateJoined: string;
-  assignedTuitions: string[];
+  assignedTuitions: [string, string][]; // [tuitionDescription, assignedDate]
 }
 
 export default async function TutorDetails({
@@ -33,7 +25,6 @@ export default async function TutorDetails({
 }) {
   const { id } = await params;
 
-  // Fetch tutor details
   const res = await fetch(`${baseUrl}/api/tutors/${id}`, { cache: "no-store" });
   if (!res.ok) {
     return (
@@ -45,19 +36,10 @@ export default async function TutorDetails({
 
   const tutor: Tutor = await res.json();
 
-  // Fetch full tuition details for each assigned tuition ID
-  const assignedTuitions: Tuition[] = tutor.assignedTuitions?.length
-    ? await Promise.all(
-        tutor.assignedTuitions.map(async (tuitionId: string) => {
-          const tuitionRes = await fetch(
-            `${baseUrl}/api/assign-tuition/${tuitionId}`,
-            { cache: "no-store" }
-          );
-          if (!tuitionRes.ok) return null;
-          return (tuitionRes.json()) as Promise<Tuition>;
-        })
-      ).then((tuitions) => tuitions.filter((t): t is Tuition => t !== null))
-    : [];
+  // Sort newest first
+  const sortedTuitions = [...tutor.assignedTuitions].sort(
+    (a, b) => new Date(b[1]).getTime() - new Date(a[1]).getTime()
+  );
 
   return (
     <div
@@ -67,9 +49,10 @@ export default async function TutorDetails({
         backgroundRepeat: "repeat",
         backgroundSize: "auto",
         backgroundPosition: "top left",
+        backgroundAttachment: "fixed",
+        minHeight: "100vh",
       }}
     >
-      {/* Dark overlay */}
       <div className="absolute inset-0 bg-[#0F1115]/80 z-0"></div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-16">
@@ -78,7 +61,7 @@ export default async function TutorDetails({
           <div className="flex items-center gap-4 border-b border-[#4B4A45] pb-4 mb-6">
             <User className="text-[#9A8F7C]" size={40} />
             <div>
-              <h1 className="text-3xl font-bold text-[#E4D7BD] drop-shadow-[0_2px_6px_rgba(154,143,124,0.3)]">
+              <h1 className="text-3xl font-bold text-[#E4D7BD]">
                 {tutor.name}
               </h1>
               <p className="text-[#E4D7BD]/70 text-sm flex items-center gap-2">
@@ -110,29 +93,34 @@ export default async function TutorDetails({
 
         {/* Assigned Tuitions */}
         <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-[#E4D7BD] drop-shadow-[0_2px_6px_rgba(228,215,189,0.3)]">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-[#E4D7BD]">
             <BookOpen size={20} className="text-[#9A8F7C]" />
             Assigned Tuitions
           </h2>
-          {assignedTuitions.length === 0 ? (
+          {sortedTuitions.length === 0 ? (
             <p className="text-sm text-[#E4D7BD]/60 italic">
               No tuitions assigned.
             </p>
           ) : (
             <ul className="space-y-3">
-              {assignedTuitions.map((tu, index) => (
+              {sortedTuitions.map(([tuitionDescription, assignedDate], idx) => (
                 <li
-                  key={tu._id || index}
-                  className="p-4 bg-[#2B2F37]/60 border border-[#4B4A45] rounded-lg hover:bg-[#9A8F7C]/10 transition"
+                  key={idx}
+                  className="p-4 bg-[#2B2F37]/60 border border-[#4B4A45] rounded-lg hover:bg-black/50 transition"
                 >
                   <p className="font-medium text-[#E4D7BD]">
-                    {tu.description}
+                    {tuitionDescription}
                   </p>
-                  {tu.student && (
-                    <p className="text-sm text-[#E4D7BD]/70">
-                      Student: {tu.student.name}
-                    </p>
-                  )}
+                  <p className="text-xs text-[#E4D7BD]/50 mt-1">
+                    Assigned on:{" "}
+                    {new Date(assignedDate).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
                 </li>
               ))}
             </ul>
