@@ -26,17 +26,24 @@ export default function Home() {
     fetchedRef.current = true;
 
     async function fetchTutors() {
-      try {
-        const res = await fetch(`${baseUrl}/api/tutors`, { cache: "no-store" });
-        if (!res.ok) throw new Error("Failed to fetch tutors");
-        const data: Tutor[] = await res.json();
-        setTutors(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  try {
+    const res = await fetch(`${baseUrl}/api/tutors`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch tutors");
+    let data: Tutor[] = await res.json();
+
+    // Sort by dateJoined (latest first)
+    data = data.sort(
+      (a, b) =>
+        new Date(b.dateJoined).getTime() - new Date(a.dateJoined).getTime()
+    );
+
+    setTutors(data);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+}
 
     fetchTutors();
   }, []);

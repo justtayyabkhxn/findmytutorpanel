@@ -89,7 +89,6 @@ export default function AdminPage() {
     }
   }, [router]);
 
-
   // ✅ Fetch tutors (memoized)
   const fetchTutors = useCallback(async () => {
     try {
@@ -201,23 +200,69 @@ export default function AdminPage() {
   return (
     <div className="p-8 max-w-6xl mx-auto font-sans">
       <div className="flex justify-between items-center mb-8">
-  <h1 className="text-4xl font-extrabold text-pink-100 tracking-tight drop-shadow-lg">
-    📚 Tutor Admin Panel
-  </h1>
+        <h1 className="text-4xl font-extrabold text-pink-100 tracking-tight drop-shadow-lg">
+          📚 Tutor Admin Panel
+        </h1>
 
-  <button
-    onClick={handleLogout}
-    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
-  >
-    <LogOut size={18} />
-    Logout
-  </button>
-</div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+        >
+          <LogOut size={18} />
+          Logout
+        </button>
+      </div>
+      {assignId && (
+        <form
+          onSubmit={handleAssign}
+          className="mt-6 p-6 bg-white rounded-3xl text-black shadow-lg space-y-4"
+        >
+          <h2 className="text-lg font-bold text-gray-800">
+            Assign Tuition to {tutors.find((t) => t._id === assignId)?.name}
+          </h2>
 
+          <textarea
+            placeholder="Enter tuition description..."
+            value={tuitionDesc}
+            onChange={(e) => setTuitionDesc(e.target.value)}
+            className="border border-green-200 p-3 w-full rounded-2xl focus:ring-2 focus:ring-green-300 resize-none"
+            rows={4}
+            required
+          />
+
+          <input
+            type="datetime-local"
+            value={assignDate}
+            onChange={(e) => setAssignDate(e.target.value)}
+            className="border border-green-200 p-3 w-full rounded-2xl focus:ring-2 focus:ring-green-300"
+            required
+          />
+
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-full shadow-md transition"
+            >
+              <BookOpen size={18} /> Assign Tuition
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAssignId(null);
+                setTuitionDesc("");
+                setAssignDate("");
+              }}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-full shadow-md transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
       {/* Add/Edit Tutor Form */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 p-6 bg-gradient-to-r from-pink-50 to-purple-50 rounded-3xl shadow-lg border border-pink-100"
+        className="space-y-4 p-6 mt-6 bg-gradient-to-r from-pink-50 to-purple-50 rounded-3xl shadow-lg border border-pink-100"
       >
         <div className="grid grid-cols-1 text-gray-900 md:grid-cols-2 gap-5">
           <input
@@ -373,53 +418,6 @@ export default function AdminPage() {
         </div>
       </div>
       {/* Assign Tuition Form */}
-      {assignId && (
-        <form
-          onSubmit={handleAssign}
-          className="mt-6 p-6 bg-white rounded-3xl text-black shadow-lg space-y-4"
-        >
-          <h2 className="text-lg font-bold text-gray-800">
-            Assign Tuition to {tutors.find((t) => t._id === assignId)?.name}
-          </h2>
-
-          <textarea
-            placeholder="Enter tuition description..."
-            value={tuitionDesc}
-            onChange={(e) => setTuitionDesc(e.target.value)}
-            className="border border-green-200 p-3 w-full rounded-2xl focus:ring-2 focus:ring-green-300 resize-none"
-            rows={4}
-            required
-          />
-
-          <input
-            type="datetime-local"
-            value={assignDate}
-            onChange={(e) => setAssignDate(e.target.value)}
-            className="border border-green-200 p-3 w-full rounded-2xl focus:ring-2 focus:ring-green-300"
-            required
-          />
-
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-full shadow-md transition"
-            >
-              <BookOpen size={18} /> Assign Tuition
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAssignId(null);
-                setTuitionDesc("");
-                setAssignDate("");
-              }}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-full shadow-md transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
       <EditAssignedTuitionsModal
         tutor={selectedTutor}
         isOpen={editModalOpen}
