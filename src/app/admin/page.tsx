@@ -57,6 +57,16 @@ export default function AdminPage() {
 
   const [assignDate, setAssignDate] = useState<string>("");
 
+  // Add new state at the top
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Derived list of tutors based on search
+  const filteredTutors = tutors.filter(
+    (tutor) =>
+      tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tutor.qualification.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleAssign = async (e: FormEvent) => {
     e.preventDefault();
     if (!assignId) return;
@@ -152,31 +162,34 @@ export default function AdminPage() {
 
   // CSV generator
   const convertToCSV = () => {
-    const headers = [
-      "Name",
-      "Experience (years)",
-      "Date Joined",
-      "Qualification",
-      "Assigned Tuitions",
-    ];
+  const headers = [
+    "Name",
+    "Experience (years)",
+    "Date Joined",
+    "Qualification",
+    "Assigned Tuitions",
+  ];
 
-    const rows = tutors.map((tutor) => {
-      const assignedTuitions =
-        assignedTuitionsMap[tutor._id]
-          ?.map((t) => t.description.replace(/"/g, '""'))
-          .join("; ") || "";
+  const rows = tutors.map((tutor) => {
+    const assignedTuitions =
+      tutor.assignedTuitions
+        ?.map(([tuitionId, date]) =>
+          `${tuitionId.replace(/"/g, '""')} (${new Date(date).toLocaleString()})`
+        )
+        .join("; ") || "";
 
-      return [
-        `"${tutor.name.replace(/"/g, '""')}"`,
-        tutor.experience.toString(),
-        tutor.dateJoined.split("T")[0],
-        `"${tutor.qualification.replace(/"/g, '""')}"`,
-        `"${assignedTuitions}"`,
-      ].join(",");
-    });
+    return [
+      `"${tutor.name.replace(/"/g, '""')}"`,
+      tutor.experience.toString(),
+      tutor.dateJoined.split("T")[0],
+      `"${tutor.qualification.replace(/"/g, '""')}"`,
+      `"${assignedTuitions}"`,
+    ].join(",");
+  });
 
-    return [headers.join(","), ...rows].join("\n");
-  };
+  return [headers.join(","), ...rows].join("\n");
+};
+
 
   // CSV download trigger
   const downloadCSV = () => {
@@ -259,6 +272,7 @@ export default function AdminPage() {
           </div>
         </form>
       )}
+      {/* Search Bar */}
       {/* Add/Edit Tutor Form */}
       <form
         onSubmit={handleSubmit}
@@ -309,15 +323,26 @@ export default function AdminPage() {
           {editingId ? "Update Tutor" : "Add Tutor"}
         </button>
       </form>
-      <div className="mt-5 text-right">
-        <button
-          onClick={downloadCSV}
-          className="inline-flex cursor-pointer items-center gap-2 bg-purple-400 hover:bg-purple-500 text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
-        >
-          <Plus size={18} />
-          Download CSV
-        </button>
-      </div>
+      <div className="mt-5 flex justify-between items-center">
+  {/* Search Bar */}
+  <input
+    type="text"
+    placeholder="🔍 Search tutors..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="border border-pink-300 p-3 rounded-2xl w-80 focus:ring-2 focus:ring-pink-400 focus:outline-none"
+  />
+
+  {/* Download CSV */}
+  <button
+    onClick={downloadCSV}
+    className="inline-flex cursor-pointer items-center gap-2 bg-purple-400 hover:bg-purple-500 text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
+  >
+    <Plus size={18} />
+    Download CSV
+  </button>
+</div>
+
       {/* Tutor List */}
       <div className="mt-10 bg-white rounded-3xl shadow-lg overflow-hidden border border-pink-100">
         <div className="overflow-x-auto w-full text-gray-900">
@@ -342,7 +367,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {tutors.map((tutor) => (
+              {filteredTutors.map((tutor) => (
                 <tr
                   key={tutor._id}
                   className="hover:bg-pink-50 transition-colors duration-200"
@@ -390,7 +415,14 @@ export default function AdminPage() {
                       <Edit size={16} /> Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(tutor._id)}
+                      onClick={() => {
+                        const confirmed = window.confirm(
+                          "Are you sure you want to delete this assignment?"
+                        );
+                        if (confirmed) {
+                          handleDelete(tutor._id);
+                        }
+                      }}
                       className="flex items-center gap-1 bg-red-300 hover:bg-red-400 text-gray-800 px-3 py-1 rounded-full shadow-sm transition"
                     >
                       <Trash2 size={16} /> Delete

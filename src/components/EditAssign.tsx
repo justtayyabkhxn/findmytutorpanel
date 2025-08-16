@@ -109,9 +109,16 @@ export default function EditAssignedTuitionsModal({
                 onChange={(e) => handleChange(index, "time", e.target.value)}
               />
               <button
-                onClick={() =>
-                  setAssignments((prev) => prev.filter((_, i) => i !== index))
-                }
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    "Are you sure you want to delete this assignment?"
+                  );
+                  if (confirmed) {
+                    setAssignments((prev) =>
+                      prev.filter((_, i) => i !== index)
+                    );
+                  }
+                }}
                 className="px-3 py-1 bg-red-500 text-black rounded-lg hover:bg-red-600 transition"
               >
                 Delete
